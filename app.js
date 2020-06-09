@@ -16,7 +16,7 @@ const logger = (req, res, next) => {
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/cards', cardsRouter);
 app.use('/users', usersRouter);
-if (NODE_ENV) app.use(logger);
+if (NODE_ENV === 'dev') app.use(logger);
 
 
 app.listen(HTTP_PORT);
