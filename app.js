@@ -12,18 +12,21 @@ const logger = (req, res, next) => {
   next();
 };
 
-const err404 = (req, res) => {
-  res.status(404).send({
-    message: 'Запрашиваемый ресурс не найден',
-  });
+const err404 = (req, res, next) => {
+  if (!res.headersSent) {
+    res.status(404).send({
+      message: 'Запрашиваемый ресурс не найден',
+    });
+  }
+  next();
 };
 
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/cards', cardsRouter);
 app.use('/users', usersRouter);
-if (NODE_ENV === 'dev') app.use(logger);
 app.use(err404);
+if (NODE_ENV === 'dev') app.use(logger);
 
 
 app.listen(HTTP_PORT);

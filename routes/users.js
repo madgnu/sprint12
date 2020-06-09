@@ -4,6 +4,8 @@ const router = require('express').Router();
 
 const usersFilePath = path.join(__dirname, '../data/users.json');
 const getUsers = async () => JSON.parse(await fsPromises.readFile(usersFilePath, { encoding: 'utf8' }));
+// eslint-disable-next-line no-underscore-dangle
+const findUserById = async (id) => (await getUsers()).find((el) => el._id === id);
 
 router.get('/', async (req, res, next) => {
   try {
@@ -19,8 +21,7 @@ router.get('/', async (req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
   try {
-    // eslint-disable-next-line no-underscore-dangle
-    const user = (await getUsers()).find((el) => el._id === req.params.id);
+    const user = await findUserById(req.params.id);
     if (user) {
       res.send(user);
     } else {
