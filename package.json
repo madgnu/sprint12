@@ -1,0 +1,25 @@
+{
+  "name": "sprint12",
+  "version": "0.0.1",
+  "description": "Ya.Praktitkum sprint12",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/madgnu/sprint12.git"
+  },
+  "author": "madgnu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/madgnu/sprint12/issues"
+  },
+  "homepage": "https://github.com/madgnu/sprint12#readme",
+  "devDependencies": {
+    "eslint": "^7.2.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.21.1",
+    "nodemon": "^2.0.4"
+  }
+}
