@@ -1,20 +1,14 @@
-const fsPromises = require('fs').promises;
-const path = require('path');
+/**
+ * @module
+ * @description Cards router.
+ */
 const router = require('express').Router();
+const cardController = require('../controllers/cards');
 
-const cardsFilePath = path.join(__dirname, '../data/cards.json');
-const getCards = async () => JSON.parse(await fsPromises.readFile(cardsFilePath, { encoding: 'utf8' }));
-
-router.get('/', async (req, res, next) => {
-  try {
-    res.send(await getCards());
-  } catch (err) {
-    res.status(500).send({
-      message: 'Произошла ошибка при загрузке карточек, обратитесь к погроммисту',
-      error: err.toString(),
-    });
-  }
-  next();
-});
+router.get('/', cardController.getCards);
+router.post('/', cardController.createCard);
+router.delete('/:cardId', cardController.deleteCard);
+router.put('/:cardId/likes', cardController.likeCard);
+router.delete('/:cardId/likes', cardController.dislikeCard);
 
 module.exports = router;
