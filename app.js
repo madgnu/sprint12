@@ -19,10 +19,13 @@ mongoose.connect(MONGODB_URI, {
   useUnifiedTopology: true,
 });
 
+// eslint-disable-next-line no-console
 mongoose.connection.on('error', console.error.bind(console, new Date(), 'connection error:'));
+// eslint-disable-next-line no-console
 mongoose.connection.on('open', console.log.bind(console, new Date(), `App connected to mongo at ${MONGODB_URI}.`));
 
 const logger = (req, res, next) => {
+  // eslint-disable-next-line no-console
   console.log(new Date(), req.ip, req.method, req.url, res.statusCode);
   next();
 };
@@ -54,5 +57,5 @@ app.use('/cards', cardsRouter);
 app.use(err404);
 if (NODE_ENV === 'dev') app.use(logger);
 
-
+// eslint-disable-next-line no-console
 app.listen(PORT, () => console.log(new Date(), `Server started at port ${PORT}`));
