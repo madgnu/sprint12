@@ -1,12 +1,19 @@
 {
-  "name": "sprint12",
-  "version": "0.0.2",
+  "name": "sprint13",
+  "version": "0.1.1",
   "description": "Ya.Praktitkum sprint12",
   "main": "app.js",
   "scripts": {
-    "dev": "NODE_ENV=dev nodemon app.js",
-    "start": "NODE_ENV=prod node app.js",
-    "test": "eslint *.js"
+    "dev": "NODE_ENV=dev nodemon app.js --inspect",
+    "start": "NODE_ENV=production pm2-runtime app.js",
+    "build:docs": "rimraf docs && jsdoc -p -c .jsdoc.json *",
+    "build:lint": "eslint --format=html . --ext .js > tests/lint.html || exit 0",
+    "build:cq": "docker run -it --rm --env CODECLIMATE_CODE=\"$PWD\" -v \"$PWD\":/code -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/cc:/tmp/cc codeclimate/codeclimate analyze -f html > tests/cq.html",
+    "build:tests": "rimraf tests && mkdir tests &&  npm run build:lint && npm run build:cq",
+    "build:dockerimage": "docker build -t mesto-backend:latest .",
+    "test:lint": "eslint . --ext .js",
+    "test:cq:install": "docker run -it --rm --env CODECLIMATE_CODE=\"$PWD\" -v \"$PWD\":/code -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/cc:/tmp/cc codeclimate/codeclimate engines:install",
+    "test:cq:json": "docker run -it --rm --env CODECLIMATE_CODE=\"$PWD\" -v \"$PWD\":/code -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/cc:/tmp/cc codeclimate/codeclimate analyze -f json"
   },
   "repository": {
     "type": "git",
@@ -19,12 +26,18 @@
   },
   "homepage": "https://github.com/madgnu/sprint12#readme",
   "devDependencies": {
-    "eslint": "^7.2.0",
+    "eslint": "^7.11.0",
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.21.1",
-    "nodemon": "^2.0.4"
+    "jsdoc": "^3.6.6",
+    "nodemon": "^2.0.4",
+    "rimraf": "^3.0.2",
+    "tui-jsdoc-template": "^1.2.2"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.10.9",
+    "pm2": "^4.5.0"
   }
 }
