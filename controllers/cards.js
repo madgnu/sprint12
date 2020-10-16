@@ -1,8 +1,9 @@
 /**
  * @module
- * @desctiption Cards controller
+ * @description Cards controller
  */
 const Card = require('../models/card');
+const CustomErrors = require('../types/errors');
 const errorHelper = require('../helpers/errorHelper');
 const validateObjectId = require('../helpers/validateObjectId');
 
@@ -55,15 +56,14 @@ module.exports.createCard = async (req, res, next) => {
  */
 module.exports.deleteCard = async (req, res, next) => {
   const { cardId } = req.params;
+  const userId = req.user._id;
 
   try {
     validateObjectId(cardId, true);
-    const card = await Card.findByIdAndDelete(cardId);
-    if (card) {
-      res.send({ message: 'Карточка удалена' });
-    } else {
-      res.status(404).send({ message: 'Карточка не найдена' });
-    }
+    const card = await Card.findById(cardId).orFail();
+    if (String(card.owner) !== userId) throw new CustomErrors.OwnerMismatchError(`Owner mismatch: expect ${userId} but found ${card.owner}`);
+    await card.deleteOne();
+    res.send(card);
   } catch (err) {
     errorHelper(err, res);
   }
@@ -89,12 +89,9 @@ module.exports.likeCard = async (req, res, next) => {
           likes: req.user._id,
         },
       },
-      { new: true }).populate(['owner', 'likes']);
-    if (card) {
-      res.send(card);
-    } else {
-      res.status(404).send({ message: 'Карточка не найдена' });
-    }
+      { new: true }).populate(['owner', 'likes'])
+      .orFail();
+    res.send(card);
   } catch (err) {
     errorHelper(err, res);
   }
@@ -121,12 +118,9 @@ module.exports.dislikeCard = async (req, res, next) => {
           likes: req.user._id,
         },
       },
-      { new: true }).populate(['owner', 'likes']);
-    if (card) {
-      res.send(card);
-    } else {
-      res.status(404).send({ message: 'Карточка не найдена' });
-    }
+      { new: true }).populate(['owner', 'likes'])
+      .orFail();
+    res.send(card);
   } catch (err) {
     errorHelper(err, res);
   }
