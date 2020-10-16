@@ -100,7 +100,7 @@ module.exports.login = async (req, res, next) => {
     switch (authStrategy) {
       case 'bearer': res.send({ token }); break;
       case 'cookie': {
-        res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7 });
+        res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true });
         res.send({ message: 'Authorized' });
         break;
       }
