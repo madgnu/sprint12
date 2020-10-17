@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 
-const CustomErrors = require('../types/errors');
+const { AuthorizationFailError } = require('../types/errors');
 
 const userSchema = new mongoose.Schema({
   /**
@@ -81,8 +81,8 @@ async function findUserByCredentials(login, password) {
   const user = await this
     .findOne({ email: login })
     .select('+password')
-    .orFail(new CustomErrors.AuthorizationFailError('User not found'));
-  if (!await bcrypt.compare(password, user.password)) throw new CustomErrors.AuthorizationFailError('Hash mismatch');
+    .orFail(new AuthorizationFailError('User not found'));
+  if (!await bcrypt.compare(password, user.password)) throw new AuthorizationFailError('Hash mismatch');
   return user;
 }
 

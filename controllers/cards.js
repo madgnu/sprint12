@@ -3,7 +3,7 @@
  * @description Cards controller
  */
 const Card = require('../models/card');
-const CustomErrors = require('../types/errors');
+const { OwnerMismatchError } = require('../types/errors');
 const errorHelper = require('../helpers/errorHelper');
 const validateObjectId = require('../helpers/validateObjectId');
 
@@ -61,7 +61,7 @@ module.exports.deleteCard = async (req, res, next) => {
   try {
     validateObjectId(cardId, true);
     const card = await Card.findById(cardId).orFail();
-    if (String(card.owner) !== userId) throw new CustomErrors.OwnerMismatchError(`Owner mismatch: expect ${userId} but found ${card.owner}`);
+    if (String(card.owner) !== userId) throw new OwnerMismatchError(`Owner mismatch: expect ${userId} but found ${card.owner}`);
     await card.deleteOne();
     res.send(card);
   } catch (err) {

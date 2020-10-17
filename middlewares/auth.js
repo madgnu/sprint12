@@ -4,7 +4,7 @@
  */
 const jwt = require('jsonwebtoken');
 const vault = require('../modules/vault');
-const CustomErrors = require('../types/errors');
+const { AuthorizationFailError } = require('../types/errors');
 const errorHelper = require('../helpers/errorHelper');
 
 /**
@@ -37,7 +37,7 @@ const bearerStrategy = (req, res, next) => {
   const { authorization } = req.headers;
 
   try {
-    if (!authorization || !authorization.startsWith('Bearer ')) throw new CustomErrors.AuthorizationFailError('Invalid authorization header');
+    if (!authorization || !authorization.startsWith('Bearer ')) throw new AuthorizationFailError('Invalid authorization header');
 
     const token = extractBearerToken(authorization);
     setSession(req, token);
@@ -58,7 +58,7 @@ const cookieStrategy = (req, res, next) => {
   const token = req.cookies.jwt;
 
   try {
-    if (!token) throw new CustomErrors.AuthorizationFailError('Invalid authorization cookie');
+    if (!token) throw new AuthorizationFailError('Invalid authorization cookie');
     setSession(req, token);
     next();
   } catch (err) {
@@ -72,7 +72,7 @@ module.exports = (req, res, next) => {
     switch (authStrategy) {
       case 'bearer': bearerStrategy(req, res, next); break;
       case 'cookie': cookieStrategy(req, res, next); break;
-      default: throw new CustomErrors.AuthorizationFailError('Unknown authorization strategy');
+      default: throw new AuthorizationFailError('Unknown authorization strategy');
     }
   } catch (err) {
     errorHelper(err, res);

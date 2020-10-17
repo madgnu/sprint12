@@ -5,7 +5,7 @@
  * You shouldn't ever store secrets in env variables, use specialized software
  * DONT USE THIS APPROACH IN PRODUCTION
  */
-const CustomErrors = require('../types/errors');
+const { SecretNotFoundError } = require('../types/errors');
 
 require('dotenv').config();
 
@@ -14,6 +14,6 @@ const secrets = { MONGODB_URI, JWT_SECRET, AUTH_STRATEGY };
 
 module.exports.init = () => (Boolean(secrets.JWT_SECRET) && Boolean(secrets.AUTH_STRATEGY)) || (process.env.NODE_ENV === 'dev');
 module.exports.getSecret = (name) => {
-  if (process.env.NODE_ENV === 'production' && !secrets[name]) throw new CustomErrors.SecretNotFoundError(`Secret "${name}" not found in vault`);
+  if (process.env.NODE_ENV === 'production' && !secrets[name]) throw new SecretNotFoundError(`Secret "${name}" not found in vault`);
   return secrets[name] || 'non-secret';
 };

@@ -5,7 +5,7 @@
 const jwt = require('jsonwebtoken');
 const vault = require('../modules/vault');
 const User = require('../models/user');
-const CustomErrors = require('../types/errors');
+const { AuthorizationFailError } = require('../types/errors');
 const errorHelper = require('../helpers/errorHelper');
 const validateObjectId = require('../helpers/validateObjectId');
 
@@ -110,7 +110,7 @@ module.exports.login = async (req, res, next) => {
         res.send({ message: 'Authorized' });
         break;
       }
-      default: throw new CustomErrors.AuthorizationFailError('Unknown authorization strategy');
+      default: throw new AuthorizationFailError('Unknown authorization strategy');
     }
   } catch (err) {
     errorHelper(err, res);
