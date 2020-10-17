@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 
 const vault = require('./modules/vault');
 const auth = require('./middlewares/auth');
@@ -61,6 +62,7 @@ if (vault.getSecret('AUTH_STRATEGY') === 'cookie') {
 }
 
 if (NODE_ENV === 'dev') app.use(logger);
+if (NODE_ENV === 'production') app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/', authRouter);
