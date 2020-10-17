@@ -74,7 +74,13 @@ module.exports.createUser = async (req, res, next) => {
       password,
     });
     await user.save();
-    res.send(user);
+    res.send({
+      _id: user._id,
+      name,
+      about,
+      avatar,
+      email,
+    });
   } catch (err) {
     errorHelper(err, res);
   }
