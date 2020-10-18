@@ -1,8 +1,11 @@
 /**
- * @module controllers/user
+ * @module
  * @description Users controller
  */
+const jwt = require('jsonwebtoken');
+const vault = require('../modules/vault');
 const User = require('../models/user');
+const { AuthorizationFailError } = require('../types/errors');
 const errorHelper = require('../helpers/errorHelper');
 const validateObjectId = require('../helpers/validateObjectId');
 
@@ -37,12 +40,8 @@ module.exports.getUserById = async (req, res, next) => {
 
   try {
     validateObjectId(userId, true);
-    const user = await User.findById(userId);
-    if (user) {
-      res.send(user);
-    } else {
-      res.status(404).send({ message: 'Пользователь не найден' });
-    }
+    const user = await User.findById(userId).orFail();
+    res.send(user);
   } catch (err) {
     errorHelper(err, res);
   }
@@ -58,12 +57,61 @@ module.exports.getUserById = async (req, res, next) => {
  * @param {express.NextFunction} next Next handler
  */
 module.exports.createUser = async (req, res, next) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
 
   try {
-    const user = await User.create({ name, about, avatar });
+    const user = await User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password,
+    });
     await user.save();
-    res.send(user);
+    res.send({
+      _id: user._id,
+      name,
+      about,
+      avatar,
+      email,
+    });
+  } catch (err) {
+    errorHelper(err, res);
+  }
+  next();
+};
+
+/**
+ * @async
+ * @author madgnu
+ * @description Login procedure, generates 7d JWT token on success
+ * @param {express.Request} req Request interface
+ * @param {express.Response} res Response interface
+ * @param {express.NextFunction} next Next handler
+ */
+module.exports.login = async (req, res, next) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findUserByCredentials(email, password);
+    const token = jwt.sign({ _id: user._id }, vault.getSecret('JWT_SECRET'), { expiresIn: '7d' });
+
+    const authStrategy = vault.getSecret('AUTH_STRATEGY');
+    switch (authStrategy) {
+      case 'bearer': res.send({ token }); break;
+      case 'cookie': {
+        res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true });
+        res.send({ message: 'Authorized' });
+        break;
+      }
+      default: throw new AuthorizationFailError('Unknown authorization strategy');
+    }
   } catch (err) {
     errorHelper(err, res);
   }
@@ -86,12 +134,8 @@ module.exports.updateUser = async (req, res, next) => {
       req.user._id,
       { name, about },
       { new: true, runValidators: true },
-    );
-    if (user) {
-      res.send(user);
-    } else {
-      res.status(404).send({ message: 'Пользователь не найден' });
-    }
+    ).orFail();
+    res.send(user);
   } catch (err) {
     errorHelper(err, res);
   }
@@ -114,12 +158,8 @@ module.exports.updateAvatar = async (req, res, next) => {
       req.user._id,
       { avatar },
       { new: true, runValidators: true },
-    );
-    if (user) {
-      res.send(user);
-    } else {
-      res.status(404).send({ message: 'Пользователь не найден' });
-    }
+    ).orFail();
+    res.send(user);
   } catch (err) {
     errorHelper(err, res);
   }

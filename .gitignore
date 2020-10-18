@@ -16,3 +16,6 @@ node_modules
 # Docs, lints, code-climate etc...
 docs
 tests
+
+#dotenv
+.env

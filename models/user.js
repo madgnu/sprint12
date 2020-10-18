@@ -3,7 +3,10 @@
  * @description Mongoose Card model
  */
 const mongoose = require('mongoose');
-const validateUrl = require('../helpers/validateUrl');
+const validator = require('validator');
+const bcrypt = require('bcryptjs');
+
+const { AuthorizationFailError } = require('../types/errors');
 
 const userSchema = new mongoose.Schema({
   /**
@@ -15,6 +18,38 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 2,
     maxlength: 30,
+  },
+  /**
+   * @type String
+   * @description User email
+   */
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    validate: {
+      validator: validator.isEmail,
+    },
+  },
+  /**
+   * @type String
+   * @description User password hashed by bcrypt with 12 rounds
+   * Password must satisfy all there params:
+   * * at least 1 uppercase
+   * * at least 1 lowercase
+   * * at least 1 number
+   * * must contain from 8 to 15 chars
+   */
+  password: {
+    type: String,
+    required: true,
+    select: false,
+    set: (value) => {
+      if (!/^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z]).{8,15}$/.test(value)) {
+        throw new mongoose.Error.ValidationError();
+      }
+      return bcrypt.hashSync(value, 12);
+    },
   },
   /**
    * @type String
@@ -34,9 +69,23 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.String,
     required: true,
     validate: {
-      validator: validateUrl,
+      validator: (url) => validator.isURL(url, {
+        protocols: ['http', 'https'],
+        require_protocol: true,
+      }),
     },
   },
 });
+
+async function findUserByCredentials(login, password) {
+  const user = await this
+    .findOne({ email: login })
+    .select('+password')
+    .orFail(new AuthorizationFailError('User not found'));
+  if (!await bcrypt.compare(password, user.password)) throw new AuthorizationFailError('Hash mismatch');
+  return user;
+}
+
+userSchema.statics.findUserByCredentials = findUserByCredentials;
 
 module.exports = mongoose.model('user', userSchema);

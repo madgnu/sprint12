@@ -1,7 +1,7 @@
 {
-  "name": "sprint13",
-  "version": "0.1.1",
-  "description": "Ya.Praktitkum sprint12",
+  "name": "sprint14",
+  "version": "0.2.2",
+  "description": "Ya.Praktitkum sprint14",
   "main": "app.js",
   "scripts": {
     "dev": "NODE_ENV=dev nodemon app.js --inspect",
@@ -35,9 +35,15 @@
     "tui-jsdoc-template": "^1.2.2"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "helmet": "^4.1.1",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.10.9",
-    "pm2": "^4.5.0"
+    "pm2": "^4.5.0",
+    "validator": "^13.1.17"
   }
 }

@@ -1,18 +1,30 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
+
+const vault = require('./modules/vault');
+const auth = require('./middlewares/auth');
+const authRouter = require('./routes/auth');
 const cardsRouter = require('./routes/cards');
 const usersRouter = require('./routes/users');
 
 const {
   PORT = 3000,
-  NODE_ENV = 'prod',
-  MONGODB_URI = 'mongodb://localhost:27017/mestodb',
-  OWNER_ID = '5f867fc39e2c800abe5e84d4',
+  NODE_ENV = 'production',
 } = process.env;
+
+if (!vault.init()) {
+  // if we are here, so we are in prod and cannot initialize important secrets (like JWT_SECRET).
+  // eslint-disable-next-line no-console
+  console.error(new Date(), 'Could not initialize secrets vault. Exiting.');
+  process.exit(1);
+}
+
 const app = express();
 
-mongoose.connect(MONGODB_URI, {
+mongoose.connect(vault.getSecret('MONGODB_URI'), {
   useNewUrlParser: true,
   useCreateIndex: true,
   useFindAndModify: false,
@@ -22,11 +34,17 @@ mongoose.connect(MONGODB_URI, {
 // eslint-disable-next-line no-console
 mongoose.connection.on('error', console.error.bind(console, new Date(), 'connection error:'));
 // eslint-disable-next-line no-console
-mongoose.connection.on('open', console.log.bind(console, new Date(), `App connected to mongo at ${MONGODB_URI}.`));
+mongoose.connection.on('open', console.log.bind(console, new Date(), 'App connected to database'));
 
 const logger = (req, res, next) => {
-  // eslint-disable-next-line no-console
-  console.log(new Date(), req.ip, req.method, req.url, res.statusCode);
+  const endHook = () => {
+    res.removeListener('finish', endHook);
+    res.removeListener('close', endHook);
+    // eslint-disable-next-line no-console
+    console.log(new Date(), req.ip, req.method, req.originalUrl, res.statusCode);
+  };
+  res.on('finish', endHook);
+  res.on('close', endHook);
   next();
 };
 
@@ -39,23 +57,18 @@ const err404 = (req, res, next) => {
   next();
 };
 
-const authWithinEnvId = (req, res, next) => {
-  req.user = {
-    _id: OWNER_ID,
-  };
-  next();
-};
+if (vault.getSecret('AUTH_STRATEGY') === 'cookie') {
+  app.use(cookieParser());
+}
 
-
+if (NODE_ENV === 'dev') app.use(logger);
+if (NODE_ENV === 'production') app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use(authWithinEnvId);
-
-app.use('/users', usersRouter);
-app.use('/cards', cardsRouter);
+app.use('/', authRouter);
+app.use('/users', auth, usersRouter);
+app.use('/cards', auth, cardsRouter);
 app.use(err404);
-if (NODE_ENV === 'dev') app.use(logger);
 
 // eslint-disable-next-line no-console
 app.listen(PORT, () => console.log(new Date(), `Server started at port ${PORT}`));
