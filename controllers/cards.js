@@ -2,9 +2,8 @@
  * @module
  * @description Cards controller
  */
-const Card = require('../models/card');
+const Card = require('../models/database/card');
 const { OwnerMismatchError } = require('../types/errors');
-const errorHelper = require('../helpers/errorHelper');
 const validateObjectId = require('../helpers/validateObjectId');
 
 /**
@@ -20,9 +19,8 @@ module.exports.getCards = async (req, res, next) => {
     const cards = await Card.find().populate(['owner', 'likes']);
     res.send(cards);
   } catch (err) {
-    errorHelper(err, res);
+    next(err);
   }
-  next();
 };
 
 /**
@@ -41,9 +39,8 @@ module.exports.createCard = async (req, res, next) => {
     await card.save();
     res.send(card);
   } catch (err) {
-    errorHelper(err, res);
+    next(err);
   }
-  next();
 };
 
 /**
@@ -65,9 +62,8 @@ module.exports.deleteCard = async (req, res, next) => {
     await card.deleteOne();
     res.send(card);
   } catch (err) {
-    errorHelper(err, res);
+    next(err);
   }
-  next();
 };
 
 /**
@@ -93,11 +89,9 @@ module.exports.likeCard = async (req, res, next) => {
       .orFail();
     res.send(card);
   } catch (err) {
-    errorHelper(err, res);
+    next(err);
   }
-  next();
 };
-
 
 /**
  * @async
@@ -122,7 +116,6 @@ module.exports.dislikeCard = async (req, res, next) => {
       .orFail();
     res.send(card);
   } catch (err) {
-    errorHelper(err, res);
+    next(err);
   }
-  next();
 };

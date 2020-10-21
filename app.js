@@ -3,9 +3,12 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
+const celebrateErrors = require('celebrate').errors;
 
 const vault = require('./modules/vault');
 const auth = require('./middlewares/auth');
+const logger = require('./middlewares/logger');
+const errhandler = require('./middlewares/errhandler');
 const authRouter = require('./routes/auth');
 const cardsRouter = require('./routes/cards');
 const usersRouter = require('./routes/users');
@@ -13,12 +16,14 @@ const usersRouter = require('./routes/users');
 const {
   PORT = 3000,
   NODE_ENV = 'production',
+  LOGS_DIR = 'logs',
+  LOGS_FORMAT = 'json',
+  LOGS_TYPE = 'file',
 } = process.env;
 
 if (!vault.init()) {
   // if we are here, so we are in prod and cannot initialize important secrets (like JWT_SECRET).
   // eslint-disable-next-line no-console
-  console.error(new Date(), 'Could not initialize secrets vault. Exiting.');
   process.exit(1);
 }
 
@@ -30,23 +35,6 @@ mongoose.connect(vault.getSecret('MONGODB_URI'), {
   useFindAndModify: false,
   useUnifiedTopology: true,
 });
-
-// eslint-disable-next-line no-console
-mongoose.connection.on('error', console.error.bind(console, new Date(), 'connection error:'));
-// eslint-disable-next-line no-console
-mongoose.connection.on('open', console.log.bind(console, new Date(), 'App connected to database'));
-
-const logger = (req, res, next) => {
-  const endHook = () => {
-    res.removeListener('finish', endHook);
-    res.removeListener('close', endHook);
-    // eslint-disable-next-line no-console
-    console.log(new Date(), req.ip, req.method, req.originalUrl, res.statusCode);
-  };
-  res.on('finish', endHook);
-  res.on('close', endHook);
-  next();
-};
 
 const err404 = (req, res, next) => {
   if (!res.headersSent) {
@@ -61,14 +49,39 @@ if (vault.getSecret('AUTH_STRATEGY') === 'cookie') {
   app.use(cookieParser());
 }
 
-if (NODE_ENV === 'dev') app.use(logger);
 if (NODE_ENV === 'production') app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(logger({
+  loggerType: 'log',
+  format: LOGS_FORMAT,
+  transportType: LOGS_TYPE,
+  filename: 'request.log',
+  dirname: LOGS_DIR,
+}));
+
+app.get('/crash-test', (req, res) => {
+  res.status(500).send({
+    message: 'https://stackoverflow.com/search?q=how+to+fix+production+server',
+  });
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 500);
+});
+
 app.use('/', authRouter);
 app.use('/users', auth, usersRouter);
 app.use('/cards', auth, cardsRouter);
+if (NODE_ENV === 'dev') app.use(celebrateErrors());
+app.use(logger({
+  loggerType: 'error',
+  format: LOGS_FORMAT,
+  transportType: LOGS_TYPE,
+  filename: 'error.log',
+  dirname: LOGS_DIR,
+}));
+app.use(errhandler);
 app.use(err404);
 
 // eslint-disable-next-line no-console
-app.listen(PORT, () => console.log(new Date(), `Server started at port ${PORT}`));
+app.listen(PORT);

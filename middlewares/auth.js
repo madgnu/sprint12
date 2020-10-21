@@ -5,7 +5,6 @@
 const jwt = require('jsonwebtoken');
 const vault = require('../modules/vault');
 const { AuthorizationFailError } = require('../types/errors');
-const errorHelper = require('../helpers/errorHelper');
 
 /**
  * @author madgnu
@@ -28,53 +27,39 @@ const setSession = (req, token) => {
 
 /**
  * @author madgnu
+ * @throws {types.errors.AuthorizationFailError}
  * @description Extract token from authorization header
- * @param {express.Request} req Request interface
- * @param {express.Response} res Response interface
- * @param {express.NextFunction} next Next handler
  */
-const bearerStrategy = (req, res, next) => {
+const bearerStrategy = (req) => {
   const { authorization } = req.headers;
 
-  try {
-    if (!authorization || !authorization.startsWith('Bearer ')) throw new AuthorizationFailError('Invalid authorization header');
+  if (!authorization || !authorization.startsWith('Bearer ')) throw new AuthorizationFailError('Invalid authorization header');
 
-    const token = extractBearerToken(authorization);
-    setSession(req, token);
-    next();
-  } catch (err) {
-    errorHelper(err, res);
-  }
+  const token = extractBearerToken(authorization);
+  setSession(req, token);
 };
 
 /**
  * @author madgnu
+ * @throws AuthorizationFailError
  * @description Extract token from jwt cookie
- * @param {express.Request} req Request interface
- * @param {express.Response} res Response interface
- * @param {express.NextFunction} next Next handler
  */
-const cookieStrategy = (req, res, next) => {
+const cookieStrategy = (req) => {
   const token = req.cookies.jwt;
 
-  try {
-    if (!token) throw new AuthorizationFailError('Invalid authorization cookie');
-    setSession(req, token);
-    next();
-  } catch (err) {
-    errorHelper(err, res);
-  }
+  if (!token) throw new AuthorizationFailError('Invalid authorization cookie');
+  setSession(req, token);
 };
 
 module.exports = (req, res, next) => {
   try {
     const authStrategy = vault.getSecret('AUTH_STRATEGY');
     switch (authStrategy) {
-      case 'bearer': bearerStrategy(req, res, next); break;
-      case 'cookie': cookieStrategy(req, res, next); break;
+      case 'bearer': bearerStrategy(req); next(); break;
+      case 'cookie': cookieStrategy(req); next(); break;
       default: throw new AuthorizationFailError('Unknown authorization strategy');
     }
   } catch (err) {
-    errorHelper(err, res);
+    next(err);
   }
 };

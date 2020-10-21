@@ -4,9 +4,8 @@
  */
 const jwt = require('jsonwebtoken');
 const vault = require('../modules/vault');
-const User = require('../models/user');
+const User = require('../models/database/user');
 const { AuthorizationFailError } = require('../types/errors');
-const errorHelper = require('../helpers/errorHelper');
 const validateObjectId = require('../helpers/validateObjectId');
 
 /**
@@ -22,9 +21,8 @@ module.exports.getUsers = async (req, res, next) => {
     const users = await User.find();
     res.send(users);
   } catch (err) {
-    errorHelper(err, res);
+    next(err);
   }
-  next();
 };
 
 /**
@@ -43,9 +41,8 @@ module.exports.getUserById = async (req, res, next) => {
     const user = await User.findById(userId).orFail();
     res.send(user);
   } catch (err) {
-    errorHelper(err, res);
+    next(err);
   }
-  next();
 };
 
 /**
@@ -82,9 +79,8 @@ module.exports.createUser = async (req, res, next) => {
       email,
     });
   } catch (err) {
-    errorHelper(err, res);
+    next(err);
   }
-  next();
 };
 
 /**
@@ -113,9 +109,8 @@ module.exports.login = async (req, res, next) => {
       default: throw new AuthorizationFailError('Unknown authorization strategy');
     }
   } catch (err) {
-    errorHelper(err, res);
+    next(err);
   }
-  next();
 };
 
 /**
@@ -137,9 +132,8 @@ module.exports.updateUser = async (req, res, next) => {
     ).orFail();
     res.send(user);
   } catch (err) {
-    errorHelper(err, res);
+    next(err);
   }
-  next();
 };
 
 /**
@@ -161,7 +155,6 @@ module.exports.updateAvatar = async (req, res, next) => {
     ).orFail();
     res.send(user);
   } catch (err) {
-    errorHelper(err, res);
+    next(err);
   }
-  next();
 };

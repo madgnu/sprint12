@@ -7,7 +7,7 @@ const CustomErrors = require('../types/errors');
 
 const { NODE_ENV = 'prod' } = process.env;
 
-module.exports = (err, res) => {
+module.exports = (err, req, res, next) => {
   const errObj = {
     message: 'На сервере произошла ошибка',
   };
@@ -41,4 +41,6 @@ module.exports = (err, res) => {
   } else {
     res.status(500).send(errObj);
   }
+
+  next();
 };
