@@ -72,7 +72,7 @@ app.get('/crash-test', (req, res) => {
 app.use('/', authRouter);
 app.use('/users', auth, usersRouter);
 app.use('/cards', auth, cardsRouter);
-if (NODE_ENV === 'dev') app.use(celebrateErrors());
+app.use(celebrateErrors());
 app.use(logger({
   loggerType: 'error',
   format: LOGS_FORMAT,
