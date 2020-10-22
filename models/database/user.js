@@ -6,6 +6,8 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 
+const passwordRegexp = require('../../types/regexp-password');
+const validateUrl = require('../../helpers/validateUrl');
 const { AuthorizationFailError } = require('../../types/errors');
 
 const userSchema = new mongoose.Schema({
@@ -45,7 +47,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     select: false,
     set: (value) => {
-      if (!/^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z]).{8,15}$/.test(value)) {
+      if (!passwordRegexp.test(value)) {
         throw new mongoose.Error.ValidationError();
       }
       return bcrypt.hashSync(value, 12);
@@ -69,10 +71,7 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.String,
     required: true,
     validate: {
-      validator: (url) => validator.isURL(url, {
-        protocols: ['http', 'https'],
-        require_protocol: true,
-      }),
+      validator: validateUrl,
     },
   },
 });

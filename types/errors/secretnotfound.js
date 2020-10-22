@@ -1,7 +1,8 @@
-class SecretNotFoundError extends Error {
+const HttpThrowableError = require('./httpthrowable');
+
+class SecretNotFoundError extends HttpThrowableError {
   constructor(message) {
-    super(message);
-    this.name = this.constructor.name;
+    super(message, 503);
   }
 }
 

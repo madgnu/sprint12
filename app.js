@@ -12,6 +12,7 @@ const errhandler = require('./middlewares/errhandler');
 const authRouter = require('./routes/auth');
 const cardsRouter = require('./routes/cards');
 const usersRouter = require('./routes/users');
+const { NotFoundError } = require('./types/errors');
 
 const {
   PORT = 3000,
@@ -36,14 +37,7 @@ mongoose.connect(vault.getSecret('MONGODB_URI'), {
   useUnifiedTopology: true,
 });
 
-const err404 = (req, res, next) => {
-  if (!res.headersSent) {
-    res.status(404).send({
-      message: 'Запрашиваемый ресурс не найден',
-    });
-  }
-  next();
-};
+const defaultRoute = (req, res, next) => next(new NotFoundError('default route'));
 
 if (vault.getSecret('AUTH_STRATEGY') === 'cookie') {
   app.use(cookieParser());
@@ -72,6 +66,7 @@ app.get('/crash-test', (req, res) => {
 app.use('/', authRouter);
 app.use('/users', auth, usersRouter);
 app.use('/cards', auth, cardsRouter);
+app.use(defaultRoute);
 app.use(celebrateErrors());
 app.use(logger({
   loggerType: 'error',
@@ -80,8 +75,7 @@ app.use(logger({
   filename: 'error.log',
   dirname: LOGS_DIR,
 }));
-app.use(errhandler);
-app.use(err404);
+app.use(errhandler(NODE_ENV));
 
 // eslint-disable-next-line no-console
 app.listen(PORT);

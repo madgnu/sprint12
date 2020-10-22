@@ -6,7 +6,6 @@ const jwt = require('jsonwebtoken');
 const vault = require('../modules/vault');
 const User = require('../models/database/user');
 const { AuthorizationFailError } = require('../types/errors');
-const validateObjectId = require('../helpers/validateObjectId');
 
 /**
  * @async
@@ -37,7 +36,6 @@ module.exports.getUserById = async (req, res, next) => {
   const { userId } = req.params;
 
   try {
-    validateObjectId(userId, true);
     const user = await User.findById(userId).orFail();
     res.send(user);
   } catch (err) {
@@ -70,7 +68,6 @@ module.exports.createUser = async (req, res, next) => {
       email,
       password,
     });
-    await user.save();
     res.send({
       _id: user._id,
       name,

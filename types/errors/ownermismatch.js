@@ -1,7 +1,8 @@
-class OwnerMismatchError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = this.constructor.name;
+const HttpThrowableError = require('./httpthrowable');
+
+class OwnerMismatchError extends HttpThrowableError {
+  constructor(message, publicMessage) {
+    super(message, 403, publicMessage);
   }
 }
 

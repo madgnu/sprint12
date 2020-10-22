@@ -5,6 +5,30 @@
 const winston = require('winston');
 const expressWinston = require('express-winston');
 
+const getFormater = (format) => {
+  switch (format) {
+    case 'json': return winston.format.json();
+    case 'short': return winston.format.printf((info) => `${new Date().toISOString()} ${info.message}`);
+    default: return winston.format.json();
+  }
+};
+
+const getTransport = (transportType, filename, dirname) => {
+  switch (transportType) {
+    case 'tty': return new winston.transports.Console();
+    case 'file': return new winston.transports.File({ filename, dirname });
+    default: return new winston.transports.File({ filename: 'request.log', dirname: 'logs' });
+  }
+};
+
+const getLogger = (loggerType) => {
+  switch (loggerType) {
+    case 'log': return expressWinston.logger;
+    case 'error': return expressWinston.errorLogger;
+    default: return expressWinston.logger;
+  }
+};
+
 module.exports = (options = {}) => {
   const {
     loggerType = 'log',
@@ -14,29 +38,11 @@ module.exports = (options = {}) => {
     dirname = 'logs',
   } = options;
 
-  let formater = null;
-  switch (format) {
-    case 'json': formater = winston.format.json(); break;
-    case 'short': formater = winston.format.printf((info) => `${new Date().toISOString()} ${info.message}`); break;
-    default: winston.format.json();
-  }
+  const logger = getLogger(loggerType);
 
-  let transport = null;
-  switch (transportType) {
-    case 'tty': transport = new winston.transports.Console(); break;
-    case 'file': transport = new winston.transports.File({ filename, dirname }); break;
-    default: transport = new winston.transports.File({ filename: 'request.log', dirname: 'logs' }); break;
-  }
-
-  let logger = null;
-  switch (loggerType) {
-    case 'log': logger = expressWinston.logger; break;
-    case 'error': logger = expressWinston.errorLogger; break;
-    default: logger = expressWinston.logger;
-  }
   return logger({
-    transports: [transport],
-    format: formater,
+    transports: [getTransport(transportType, filename, dirname)],
+    format: getFormater(format),
     expressFormat: format === 'short',
   });
 };

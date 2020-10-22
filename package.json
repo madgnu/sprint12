@@ -1,7 +1,7 @@
 {
-  "name": "sprint14",
-  "version": "0.2.2",
-  "description": "Ya.Praktitkum sprint14",
+  "name": "sprint15",
+  "version": "0.3.2",
+  "description": "Ya.Praktitkum sprint15",
   "main": "app.js",
   "scripts": {
     "dev": "NODE_ENV=dev nodemon app.js --inspect",
