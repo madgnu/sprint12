@@ -17,5 +17,8 @@ node_modules
 docs
 tests
 
-#dotenv
+# Environmental config
 .env
+
+# Kubernetes deployment
+.kube

@@ -1,6 +1,6 @@
-# Yandex.Практикум спринт 14
+# Yandex.Практикум спринт 15
 
-Version: v.0.2.2
+Version: v.0.3.2
 
 ## Описание
 
@@ -55,3 +55,6 @@ Version: v.0.2.2
 * `MONGODB_URI` - URI базы, по-умолчанию
 * `JWT_SECRET` - JWT secret
 * `AUTH_STRATEGY` - стратегия авторизации. Допустимые варианты: `bearer` или `cookie`
+* `LOGS_TYPE` - транспорт, куда выкидывать логи: `tty` (консоль) или `file`
+* `LOGS_DIR` - директория, куда логи складывать (применяется, если `LOGS_TYPE=file`)
+* `LOGS_FORMAT` - формат логов: `json` или `short`

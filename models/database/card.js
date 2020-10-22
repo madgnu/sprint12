@@ -3,7 +3,8 @@
  * @description Mongoose Card model
  */
 const mongoose = require('mongoose');
-const validator = require('validator');
+
+const validateUrl = require('../../helpers/validateUrl');
 
 const cardSchema = new mongoose.Schema({
   /**
@@ -24,10 +25,7 @@ const cardSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.String,
     required: true,
     validate: {
-      validator: (url) => validator.isURL(url, {
-        protocols: ['http', 'https'],
-        require_protocol: true,
-      }),
+      validator: validateUrl,
     },
   },
   /**

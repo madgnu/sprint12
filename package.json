@@ -1,7 +1,7 @@
 {
-  "name": "sprint14",
-  "version": "0.2.2",
-  "description": "Ya.Praktitkum sprint14",
+  "name": "sprint15",
+  "version": "0.3.2",
+  "description": "Ya.Praktitkum sprint15",
   "main": "app.js",
   "scripts": {
     "dev": "NODE_ENV=dev nodemon app.js --inspect",
@@ -37,13 +37,16 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
+    "celebrate": "^13.0.3",
     "cookie-parser": "^1.4.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "express-winston": "^4.0.5",
     "helmet": "^4.1.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.10.9",
     "pm2": "^4.5.0",
-    "validator": "^13.1.17"
+    "validator": "^13.1.17",
+    "winston": "^3.3.3"
   }
 }

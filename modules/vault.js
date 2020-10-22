@@ -5,7 +5,7 @@
  * You shouldn't ever store secrets in env variables, use specialized software
  * DONT USE THIS APPROACH IN PRODUCTION
  */
-const { SecretNotFoundError } = require('../types/errors');
+const { SecretNotFoundError } = require('../types/errors/secretnotfound');
 
 require('dotenv').config();
 
